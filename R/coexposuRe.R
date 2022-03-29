@@ -2,7 +2,7 @@ options(dplyr.summarise.inform = FALSE)
 
 #' Get Simulated Network
 #'
-#' `get_simulated_network()` runs a single simulation and returns coexposure networks and additional information related to those networks. \cr
+#' `simulate_single_network()` runs a single simulation and returns coexposure networks and additional information related to those networks. \cr
 #' @seealso Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 #' @param n1 The number of media outlets in the environment
 #' @param n2 The number of agents in the environment
@@ -12,30 +12,30 @@ options(dplyr.summarise.inform = FALSE)
 #' @param b the skewness parameter that determines how skewed the browsing behavior of the agents is. Can be negative or positive, but not 0. Default is 1.
 #' @param show_network if TRUE, will plot the coexposure network. Default is FALSE.
 #' @param niter used if `show_network` = TRUE. Passed to `plot.igraph` for visualizing network.
-#' @return `get_simulated_network` returns a list with three elements: \cr
+#' @return `simulate_single_network` returns a list with three elements: \cr
 #' * `g` the coexposure network of media outlets \cr
 #' * `ag` the augmented coexposure network \cr
 #' * `outlet_dat` a tibble containing the details of the simulated media outlets
-#' @examples 
-#' res <- get_simulated_network(n1 = 50, n2 = 30, n3 = 3, rho = 0.1, show_network = TRUE)
+#' @examples
+#' res <- simulate_single_network(n1 = 50, n2 = 30, n3 = 3, rho = 0.1, show_network = TRUE)
 #' @export
-get_simulated_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = FALSE, niter = 500) {
-  
+simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = FALSE, niter = 500) {
+
   # check if parameters are valid
-  
-  
+
+
   if(n3 > n1) stop("n3 (number of types of outlets/agents) cannot be more than n1 (number of outlets)")
   if(n3 > n2) stop("n3 (number of types of outlets/agents) cannot be more than n2 (number of agents)")
   if(b == 0) stop("b (skewness) cannot be 0")
-  
+
   if(class(n1) != "numeric" | class(n2) != "numeric" | class(n3) != "numeric" | class(rho) != "numeric") {
     stop("n1, n2, and n3 should be of type numeric.")
   }
-  
+
   if(class(a) != "numeric" | class(b) != "numeric") {
     stop("a and b should be of type numeric.")
   }
-  
+
   # stopifnot(!missing(n1), !missing(n2), !missing(n3), !missing(rho))
   # stopifnot(class(n1) == "numeric")
   # stopifnot(class(n2) == "numeric")
@@ -43,13 +43,13 @@ get_simulated_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = 
   # stopifnot(n3 <= n1)
   # stopifnot(n3 <= n2)
   # stopifnot(b != 0)
-  
-  
+
+
   message("Initializing universe...")
   outlet_ids <- 1:n1
   p_ids <- 1:n2
   types <- as.character(1:n3)
-  
+
   if(a > 1) {
     outlet_rep <-  poweRlaw::rpldis(n1, 1, alpha = a) # power law distribution
     outlet_rep_normalized <- outlet_rep / sum(outlet_rep)
@@ -57,59 +57,59 @@ get_simulated_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = 
     outlet_rep <- rep(1, n1)
     outlet_rep_normalized <- outlet_rep / sum(outlet_rep)
   }
-  
+
   outlets_tbl <- tibble(
     outlet_id = outlet_ids,
     outlet_name = paste("O", outlet_ids, sep = "_"),
     outlet_type = sample_atleast_once(types, n1), # at least one website of each type
     outlet_repute = outlet_rep_normalized
   )
-  
+
   all_n4 <- rsnorm(n = n2, mean = 0, sd = 1, xi = b)
   all_n4_scaled <- round(((all_n4 - min(all_n4))/(max(all_n4)-min(all_n4))*(n1-1) + 1))
-  
+
   audience_tbl <- tibble(
     p_id = p_ids,
     p_name = paste("P", p_ids, sep = ""),
     p_type = sample_atleast_once(types, n2),       # at least one audience member of each type
     p_n4 = all_n4_scaled
   )
-  
+
   audience_el <- NULL
-  
+
   # loop over each person
   message("Simulating audience behavior...")
   for(p in 1:n2) {
-    
+
     n4 <- audience_tbl$p_n4[p]
-    
+
     # when rho is 0 all of their choices are selective
     # when rho is 1 all of their choices are random
     random_choices_allowed <- round(rho * n4)
     selective_choices_allowed <- n4 - random_choices_allowed
-    
+
     selective_outlets_pool <- outlets_tbl %>%
       dplyr::filter(outlet_type == audience_tbl$p_type[p]) %>%
       select(outlet_id, outlet_repute)
-    
+
     if(nrow(selective_outlets_pool) == 1) {                         # this is to prevent the bug where 1 type gets 1 outlet
       selective_outlets_pool <- selective_outlets_pool %>%
         rbind(selective_outlets_pool)
     }
-    
+
     selective_chosen_outlets <- selective_outlets_pool %>%          # from
       pull(outlet_id) %>%                                           # all outlets in the selective outlets pool
       sample(selective_choices_allowed, replace = TRUE,             # randomly sample with prob = outlet repute (R auto-normalizes the probabilities of the subset)
              prob = selective_outlets_pool$outlet_repute)
-    
+
     random_chosen_outlets <- outlets_tbl %>%                        # from
       pull(outlet_id) %>%                                           # all outlets in the universe
       sample(random_choices_allowed, replace = TRUE,                # randomly sample with prob = outlet_repute
              prob = outlets_tbl$outlet_repute)
-    
+
     all_chosen_outlets <- c(selective_chosen_outlets,
                             random_chosen_outlets)
-    
+
     # build the edge-list for the audience network
     audience_el <- audience_el %>%
       rbind(
@@ -119,70 +119,70 @@ get_simulated_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = 
         )
       )
   }
-  
+
   outlet_reach <- audience_el %>%
     pull(outlet_name) %>%
     table() %>%
     as_tibble() %>%
     dplyr::rename(uv = n) %>%
     select(outlet_name = 1, everything())
-  
+
   message("Constructing network...")
   audience_g <- igraph::graph_from_data_frame(audience_el, directed = F)
   igraph::V(audience_g)$type <- substr(igraph::V(audience_g)$name, 1, 1) == "O"
-  
+
   # graph projections
   projection_graphs <- igraph::bipartite_projection(audience_g, multiplicity = TRUE)
   outlet_projection <- projection_graphs$proj2
-  
+
   igraph::V(outlet_projection)$type <- igraph::V(outlet_projection)$name %>%
-    lapply(FUN = function(x) { 
+    lapply(FUN = function(x) {
       outlets_tbl %>%
-        dplyr::filter(outlet_name == x) %>% 
+        dplyr::filter(outlet_name == x) %>%
         pull(outlet_type)
     }
     ) %>%
     unlist()
-  
+
   # # colrs <- c("gray50", "tomato", "gold", "purple", "cyan")
   # V(outlet_projection)$color <- ifelse(V(outlet_projection)$type == "A", "gray50",
   #                                      ifelse(V(outlet_projection)$type == "B", "tomato",
   #                                             ifelse(V(outlet_projection)$type == "C", "gold",
   #                                                    ifelse(V(outlet_projection)$type == "D", "olivedrab4",
   #                                                           "cyan"))))
-  
+
   outlet_projection_sl <- outlet_projection
   outlet_projection_sl[from=igraph::V(outlet_projection_sl), to=igraph::V(outlet_projection_sl)] = 1
   for(v in igraph::V(outlet_projection_sl)$name) {
-    igraph::E(outlet_projection_sl)[v %--% v]$weight <- outlet_reach %>% 
+    igraph::E(outlet_projection_sl)[v %--% v]$weight <- outlet_reach %>%
       dplyr::filter(outlet_name == v) %>%
       pull(uv)
   }
-  
+
   if(show_network) {
-    
+
     l <- igraph::layout_with_fr(outlet_projection, niter=niter)
     if(n3 < 10) {
       pal <- brewer.pal(n3, "Set1")
     } else {
       pal <- randomColor(n3)
     }
-    
+
     igraph::plot.igraph(outlet_projection,
                         edge.color="gray90",
                         vertex.color = pal[as.numeric(as.factor(igraph::vertex_attr(outlet_projection, "type")))],
-                        vertex.size = 5, 
+                        vertex.size = 5,
                         layout = l,
                         vertex.label = NA)
-    
+
   }
-  
+
   return(list("g" = outlet_projection, "ag" = outlet_projection_sl, "outlet_data" = outlets_tbl))
 }
 
 #' Run full simulation
 #'
-#' Calls `get_simulated_network` with different values of rho and returns the results of the simulation
+#' Calls `simulate_single_network` with different values of rho and returns the results of the simulation
 #' @seealso Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 #' @param n1 the number of media outlets in the environment
 #' @param n2 the number of agents in the environment
@@ -197,143 +197,143 @@ get_simulated_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network = 
 #' @param correct if TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.
 #' @param plot_results if TRUE, a graph of the results is shown.
 #' @return a tibble with the results for each iteration within the simulation
-#' @examples 
-#' res <- run_simulation(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
+#' @examples
+#' res <- simulate_analyze_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
 #' @export
-run_simulation <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, a = 2, b = 1, N = 100, metric = "max", correct = T, plot_results = T) {
-  
+simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, a = 2, b = 1, N = 100, metric = "max", correct = T, plot_results = T) {
+
   res_tbl <- NULL
-  
+
   for(rho in seq(from = rho_min, to = rho_max, by = rho_inc)) {
     i <- 1
     while(i <= N) {
       message(paste0("rho : ", rho, " iteration : ", i))
-      
-      test <- get_simulated_network(n1, n2, n3, rho = rho, a, b)
-      
+
+      test <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
+
       g <- test[[1]]
       g_sl <- test[[2]]
       o_tbl <- test[[3]]
-      
-      
+
+
       if(length(igraph::V(g)) <= 1) {
         # message("Rerun...")
         next
       }
-      
+
       c_wt <- tryCatch(
         # cluster_walktrap uses E(g)$weight by default
         igraph::cluster_walktrap(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_wt2 <- tryCatch(
         igraph::cluster_walktrap(g_sl),
         error = function(e) {
           return(NA)
         })
-      
+
       c_l <- tryCatch(
         # cluster_louvain uses E(g)$weight by default
         igraph::cluster_louvain(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_l2 <- tryCatch(
         # cluster_louvain uses E(g)$weight by default
         igraph::cluster_louvain(g_sl),
         error = function(e) {
           return(NA)
         })
-      
+
       c_fg <- tryCatch(
         # cluster_fast_greedy uses E(g)$weight by default
         igraph::cluster_fast_greedy(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_fg2 <- tryCatch(
         # cluster_fast_greedy uses E(g)$weight by default
         igraph::cluster_fast_greedy(g_sl),
         error = function(e) {
           return(NA)
         })
-      
+
       c_eb <- tryCatch(
         # cluster edge_betweenness uses E(g)$weight by default
         igraph::cluster_edge_betweenness(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_eb2 <- tryCatch(
         # cluster edge_betweenness uses E(g)$weight by default
         igraph::cluster_edge_betweenness(g_sl),
         error = function(e) {
           return(NA)
         })
-      
+
       c_im <- tryCatch(
         # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
         igraph::cluster_infomap(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_im2 <- tryCatch(
         # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
         igraph::cluster_infomap(g_sl),
         error = function(e) {
           return(NA)
         })
-      
-      
+
+
       c_lp <- tryCatch(
         # label propagation uses weight by default
         igraph::cluster_label_prop(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_lp2 <- tryCatch(
         # label propagation uses weight by default
         igraph::cluster_label_prop(g_sl),
         error = function(e) {
           return(NA)
         })
-      
+
       c_le <- tryCatch(
         # leading eigenvector uses weight by default
         igraph::cluster_leading_eigen(g, options = list(maxiter=1000000)),
         error = function(e) {
           return(NA)
         })
-      
+
       c_le2 <- tryCatch(
         # leading eigenvector uses E(g)$weight by default
         igraph::cluster_leading_eigen(g_sl, options = list(maxiter=1000000)),
         error = function(e) {
           return(NA)
         })
-      
+
       c_sl <- tryCatch(
         # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
         igraph::cluster_spinglass(g),
         error = function(e) {
           return(NA)
         })
-      
+
       c_sl2 <- tryCatch(
         # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
         igraph::cluster_spinglass(g_sl),
         error = function(e) {
           return(NA)
         })
-      
-      
+
+
       all_cs <- list(c_wt, c_wt2,
                      c_l, c_l2,
                      c_fg, c_fg2,
@@ -343,7 +343,7 @@ run_simulation <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, 
                      c_le, c_le2,
                      c_sl, c_sl2
       )
-      
+
       cd_used <- c(
         "wt", "wt2",
         "l", "l2",
@@ -354,17 +354,17 @@ run_simulation <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, 
         "le", "le2",
         "sl", "sl2"
       )
-      
+
       NMI_scores <- sapply(all_cs, FUN = function(x) {
         get_NMI(x, o_tbl, metric)
       })
-      
-      
+
+
       if(correct) {
         scaling_factors <- sapply(all_cs, FUN = function(x) {
           get_scalingfactor(x, o_tbl)
         })
-        
+
         res_tbl <- tibble(
           run = i,
           rho = rho,
@@ -373,9 +373,9 @@ run_simulation <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, 
           scaling_factors = scaling_factors
         ) %>%
           rbind(res_tbl)
-        
+
       } else {
-        
+
         res_tbl <- tibble(
           run = i,
           rho = rho,
@@ -384,67 +384,67 @@ run_simulation <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, 
         ) %>%
           rbind(res_tbl)
       }
-      
+
       i <- i+1
     }
   }
-  
-  
+
+
   res_tbl <- res_tbl %>%
     mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
     mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
     mutate(method = gsub("2", "", method)) %>%
     mutate(method = ifelse(method == "wt", "Walktrap",
                            ifelse(method == "l", "Multilevel",
-                                  ifelse(method == "fg", "Fast Greedy", 
+                                  ifelse(method == "fg", "Fast Greedy",
                                          ifelse(method == "eb", "Edge Betweenness",
                                                 ifelse(method == "im", "Infomap",
                                                        ifelse(method == "lp", "Label Propagation",
                                                               ifelse(method == "le", "Leading Eigenvector",
                                                                      ifelse(method == "sl", "Spin Glass", "Unknown")))))))))
-  
-  
-  
+
+
+
   if(correct) {
-    
+
     message("Scaling NMI values...")
     res_tbl <- res_tbl %>%
       mutate(SNMI_scores = NMI_scores * scaling_factors)
-    
+
     plot_tbl <- res_tbl %>%
       group_by(method, network_type, rho) %>%
       summarize(meanSNMI = mean(SNMI_scores),
                 sdSNMI = sd(SNMI_scores))
-    
+
     if(plot_results) {
-      
+
       message("Plotting results...")
       print(ggplot(data = plot_tbl, aes(x = rho, fill = network_type, color = network_type)) +
               geom_line(aes(y = meanSNMI)) +
               geom_ribbon(aes(ymin = meanSNMI - sdSNMI, ymax = meanSNMI + sdSNMI), alpha = 0.3) +
               facet_wrap(~method))
     }
-    
+
   } else {
-    
+
     message("NMI values not scaled.")
-    
+
     plot_tbl <- res_tbl %>%
       group_by(method, network_type, rho) %>%
       summarize(meanNMI = mean(NMI_scores),
                 sdNMI = sd(NMI_scores))
-    
+
     if(plot_results) {
-      
+
       message("Plotting results...")
       print(ggplot(data = plot_tbl, aes(x = rho, fill = network_type, color = network_type)) +
               geom_line(aes(y = meanNMI)) +
               geom_ribbon(aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
               facet_wrap(~method))
     }
-    
+
   }
-  
+
   return(res_tbl)
 }
 
