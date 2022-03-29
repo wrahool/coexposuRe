@@ -1,0 +1,23 @@
+Package: coexposuRe
+Title: Simulates Coexposure Networks
+Version: 0.0.0.9000
+Authors@R: 
+    person("Subhayan", "Mukerjee", , "mail@subhayan.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1885-5440"))
+Description: This package allows you to simulate the behavior of information seeking agents in an artificial media environment,
+    and construct a coexposure network that results from this simulation. It also allows you to run a full simulation of
+    agents in the media environment for various values of a randomizing parameter that determines the extent to which 
+    agents choose same type of outlet as themselves. For more details 
+    see Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure 
+    in co-exposure networks. Scientific Reports, 11(1), 1-11.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports:
+    dplyr,
+    igraph,
+    aricode,
+    poweRlaw,
+    ggplot2
