@@ -29,11 +29,20 @@ get_NMI <- function(c, outlet_types, v) {
   # which are NA.
 
   if(!is.na(c)) {
+
+    test_tbl <- tibble::tibble(
+      outlet_name = c$names,
+      pred_type = c$membership
+    )
+
     confusion_tbl <- outlet_types %>%
-      merge(tibble:tibble(
-        outlet_name = c$names,
-        pred_type = c$membership
-      ))
+      dplyr::inner_join(test_tbl, by = "outlet_name")
+
+    # confusion_tbl <- outlet_types %>%
+    #   merge(tibble:tibble(
+    #     outlet_name = c$names,
+    #     pred_type = c$membership
+    #   ))
 
     NMI_score <- aricode::NMI(confusion_tbl$outlet_type,
                               confusion_tbl$pred_type, variant = v)
@@ -92,17 +101,20 @@ get_scalingfactor <- function(c, outlet_types) {
 
 
   if(!is.na(c)) {
+
+    test_tbl <- tibble::tibble(
+      outlet_name = c$names,
+      pred_type = c$membership
+    )
+
     confusion_tbl <- outlet_types %>%
-      merge(tibble:tibble(
-        outlet_name = c$names,
-        pred_type = c$membership
-      ))
+      dplyr::inner_join(test_tbl, by = "outlet_name")
 
     NMI_score <- aricode::NMI(confusion_tbl$outlet_type,
                               confusion_tbl$pred_type)
 
-    R <- confusion_tbl %>% pull(outlet_type) %>% unique() %>% length()
-    S <- confusion_tbl %>% pull(pred_type) %>% unique() %>% length()
+    R <- confusion_tbl %>% dplyr::pull(outlet_type) %>% unique() %>% length()
+    S <- confusion_tbl %>% dplyr::pull(pred_type) %>% unique() %>% length()
 
     scaling_factor <- exp(-(abs(R-S))/R)
     # SNMI_score <- scaling_factor * NMI_score
@@ -139,8 +151,8 @@ get_SNMI <- function(c, outlet_types) {
     NMI_score <- aricode::NMI(confusion_tbl$outlet_type,
                               confusion_tbl$pred_type)
 
-    R <- confusion_tbl %>% pull(outlet_type) %>% unique() %>% length()
-    S <- confusion_tbl %>% pull(pred_type) %>% unique() %>% length()
+    R <- confusion_tbl %>% dplyr::pull(outlet_type) %>% unique() %>% length()
+    S <- confusion_tbl %>% dplyr::pull(pred_type) %>% unique() %>% length()
 
     scaling_factor <- exp(-(abs(R-S))/R)
     SNMI_score <- scaling_factor * NMI_score

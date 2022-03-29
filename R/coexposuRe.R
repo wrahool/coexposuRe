@@ -209,12 +209,11 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
     while(i <= N) {
       message(paste0("rho : ", rho, " iteration : ", i))
 
-      test <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
+      sim_res <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
 
-      g <- test[[1]]
-      g_sl <- test[[2]]
-      o_tbl <- test[[3]]
-
+      g <- sim_res$g
+      g_sl <- sim_res$ag
+      o_tbl <- sim_res$outlet_data
 
       if(length(igraph::V(g)) <= 1) {
         # message("Rerun...")
@@ -359,7 +358,6 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
         get_NMI(x, o_tbl, metric)
       })
 
-
       if(correct) {
         scaling_factors <- sapply(all_cs, FUN = function(x) {
           get_scalingfactor(x, o_tbl)
@@ -389,12 +387,11 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
     }
   }
 
-
   res_tbl <- res_tbl %>%
-    mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
-    mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
-    mutate(method = gsub("2", "", method)) %>%
-    mutate(method = ifelse(method == "wt", "Walktrap",
+    dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
+    dplyr::mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
+    dplyr::mutate(method = gsub("2", "", method)) %>%
+    dplyr::mutate(method = ifelse(method == "wt", "Walktrap",
                            ifelse(method == "l", "Multilevel",
                                   ifelse(method == "fg", "Fast Greedy",
                                          ifelse(method == "eb", "Edge Betweenness",
@@ -404,25 +401,24 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
                                                                      ifelse(method == "sl", "Spin Glass", "Unknown")))))))))
 
 
-
   if(correct) {
 
     message("Scaling NMI values...")
     res_tbl <- res_tbl %>%
-      mutate(SNMI_scores = NMI_scores * scaling_factors)
+      dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors)
 
     plot_tbl <- res_tbl %>%
-      group_by(method, network_type, rho) %>%
-      summarize(meanSNMI = mean(SNMI_scores),
+      dplyr::group_by(method, network_type, rho) %>%
+      dplyr::summarize(meanSNMI = mean(SNMI_scores),
                 sdSNMI = sd(SNMI_scores))
 
     if(plot_results) {
 
       message("Plotting results...")
-      print(ggplot(data = plot_tbl, aes(x = rho, fill = network_type, color = network_type)) +
-              geom_line(aes(y = meanSNMI)) +
-              geom_ribbon(aes(ymin = meanSNMI - sdSNMI, ymax = meanSNMI + sdSNMI), alpha = 0.3) +
-              facet_wrap(~method))
+      print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
+              ggplot2::geom_line(ggplot2::aes(y = meanSNMI)) +
+              ggplot2::geom_ribbon(ggplot2::aes(ymin = meanSNMI - sdSNMI, ymax = meanSNMI + sdSNMI), alpha = 0.3) +
+              ggplot2::facet_wrap(~method))
     }
 
   } else {
@@ -430,17 +426,17 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
     message("NMI values not scaled.")
 
     plot_tbl <- res_tbl %>%
-      group_by(method, network_type, rho) %>%
-      summarize(meanNMI = mean(NMI_scores),
+      dplyr::group_by(method, network_type, rho) %>%
+      dplyr::summarize(meanNMI = mean(NMI_scores),
                 sdNMI = sd(NMI_scores))
 
     if(plot_results) {
 
       message("Plotting results...")
-      print(ggplot(data = plot_tbl, aes(x = rho, fill = network_type, color = network_type)) +
-              geom_line(aes(y = meanNMI)) +
-              geom_ribbon(aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
-              facet_wrap(~method))
+      print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
+              ggplot2::geom_line(ggplot2::aes(y = meanNMI)) +
+              ggplot2::geom_ribbon(ggplot2::aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
+              ggplot2::facet_wrap(~method))
     }
 
   }
