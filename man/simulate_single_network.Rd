@@ -36,7 +36,7 @@ simulate_single_network(
 \code{simulate_single_network} returns a list with three elements: \cr
 \itemize{
 \item \code{g} the coexposure network of media outlets \cr
-\item \code{ag} the augmented coexposure network \cr
+\item \code{ag} the augmented coexposure network \crggplot2::
 \item \code{outlet_dat} a tibble containing the details of the simulated media outlets
 }
 }

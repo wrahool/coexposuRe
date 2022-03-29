@@ -1,4 +1,4 @@
-options(dplyr.summarise.inform = FALSE)
+
 
 #' Get Simulated Network
 #'
@@ -407,10 +407,10 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
     res_tbl <- res_tbl %>%
       dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors)
 
-    plot_tbl <- res_tbl %>%
+    suppressMessages(plot_tbl <- res_tbl %>%
       dplyr::group_by(method, network_type, rho) %>%
       dplyr::summarise(meanSNMI = mean(SNMI_scores),
-                sdSNMI = sd(SNMI_scores))
+                sdSNMI = sd(SNMI_scores)))
 
     if(plot_results) {
 
@@ -425,10 +425,10 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
 
     message("NMI values not scaled.")
 
-    plot_tbl <- res_tbl %>%
+    suppressMessages(plot_tbl <- res_tbl %>%
       dplyr::group_by(method, network_type, rho) %>%
       dplyr::summarise(meanNMI = mean(NMI_scores),
-                sdNMI = sd(NMI_scores))
+                sdNMI = sd(NMI_scores)))
 
     if(plot_results) {
 
