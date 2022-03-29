@@ -90,7 +90,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 
     selective_outlets_pool <- outlets_tbl %>%
       dplyr::filter(outlet_type == audience_tbl$p_type[p]) %>%
-      select(outlet_id, outlet_repute)
+      dplyr::select(outlet_id, outlet_repute)
 
     if(nrow(selective_outlets_pool) == 1) {                         # this is to prevent the bug where 1 type gets 1 outlet
       selective_outlets_pool <- selective_outlets_pool %>%
@@ -125,7 +125,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
     table() %>%
     tibble::as_tibble() %>%
     dplyr::rename(uv = n) %>%
-    select(outlet_name = 1, everything())
+    dplyr::select(outlet_name = 1, everything())
 
   message("Constructing network...")
   audience_g <- igraph::graph_from_data_frame(audience_el, directed = F)
