@@ -58,17 +58,17 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
     outlet_rep_normalized <- outlet_rep / sum(outlet_rep)
   }
 
-  outlets_tbl <- tibble(
+  outlets_tbl <- tibble::tibble(
     outlet_id = outlet_ids,
     outlet_name = paste("O", outlet_ids, sep = "_"),
     outlet_type = sample_atleast_once(types, n1), # at least one website of each type
     outlet_repute = outlet_rep_normalized
   )
 
-  all_n4 <- rsnorm(n = n2, mean = 0, sd = 1, xi = b)
+  all_n4 <- fGarch::rsnorm(n = n2, mean = 0, sd = 1, xi = b)
   all_n4_scaled <- round(((all_n4 - min(all_n4))/(max(all_n4)-min(all_n4))*(n1-1) + 1))
 
-  audience_tbl <- tibble(
+  audience_tbl <- tibble::tibble(
     p_id = p_ids,
     p_name = paste("P", p_ids, sep = ""),
     p_type = sample_atleast_once(types, n2),       # at least one audience member of each type
@@ -113,7 +113,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
     # build the edge-list for the audience network
     audience_el <- audience_el %>%
       rbind(
-        tibble(
+        tibble::tibble(
           p_name = paste("P", rep(p, n4), sep = "_"),               # one column is the p_id
           outlet_name = paste("O", all_chosen_outlets, sep = "_")   # second column is the outlet_id
         )
@@ -123,7 +123,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
   outlet_reach <- audience_el %>%
     pull(outlet_name) %>%
     table() %>%
-    as_tibble() %>%
+    tibble::as_tibble() %>%
     dplyr::rename(uv = n) %>%
     select(outlet_name = 1, everything())
 
@@ -365,7 +365,7 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
           get_scalingfactor(x, o_tbl)
         })
 
-        res_tbl <- tibble(
+        res_tbl <- tibble::tibble(
           run = i,
           rho = rho,
           method = cd_used,
@@ -376,7 +376,7 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
 
       } else {
 
-        res_tbl <- tibble(
+        res_tbl <- tibble::tibble(
           run = i,
           rho = rho,
           method = cd_used,
