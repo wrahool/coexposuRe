@@ -163,9 +163,9 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 
     l <- igraph::layout_with_fr(outlet_projection, niter=niter)
     if(n3 < 10) {
-      pal <- brewer.pal(n3, "Set1")
+      pal <- RColorBrewer::brewer.pal(n3, "Set1")
     } else {
-      pal <- randomColor(n3)
+      pal <- randomcoloR::randomColor(n3)
     }
 
     igraph::plot.igraph(outlet_projection,
