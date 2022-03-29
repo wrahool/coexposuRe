@@ -46,6 +46,6 @@ simulate_single_network(
 \examples{
 res <- simulate_single_network(n1 = 50, n2 = 30, n3 = 3, rho = 0.1, show_network = TRUE)
 }
-\seealso{
+\references{
 Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 }

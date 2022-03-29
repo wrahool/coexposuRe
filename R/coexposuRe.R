@@ -3,7 +3,7 @@ options(dplyr.summarise.inform = FALSE)
 #' Get Simulated Network
 #'
 #' `simulate_single_network()` runs a single simulation and returns coexposure networks and additional information related to those networks. \cr
-#' @seealso Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
+#' @references Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 #' @param n1 The number of media outlets in the environment
 #' @param n2 The number of agents in the environment
 #' @param n3 The number of types of media outlets and agents in the environment. Must be less than n1 and n2.
@@ -183,7 +183,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 #' Run full simulation
 #'
 #' Calls `simulate_single_network` with different values of rho and returns the results of the simulation
-#' @seealso Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
+#' @references Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 #' @param n1 the number of media outlets in the environment
 #' @param n2 the number of agents in the environment
 #' @param n3 the number of types of media outlets and agents in the environment. Must be less than n1 and n2.

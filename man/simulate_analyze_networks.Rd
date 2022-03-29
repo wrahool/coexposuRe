@@ -53,6 +53,6 @@ Calls \code{simulate_single_network} with different values of rho and returns th
 \examples{
 res <- simulate_analyze_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
 }
-\seealso{
+\references{
 Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 }
