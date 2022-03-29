@@ -14,7 +14,7 @@ options(dplyr.summarise.inform = FALSE)
 #' @param niter used if `show_network` = TRUE. Passed to `plot.igraph` for visualizing network.
 #' @return `simulate_single_network` returns a list with three elements: \cr
 #' * `g` the coexposure network of media outlets \cr
-#' * `ag` the augmented coexposure network \cr
+#' * `ag` the augmented coexposure network \crggplot2::
 #' * `outlet_dat` a tibble containing the details of the simulated media outlets
 #' @examples
 #' res <- simulate_single_network(n1 = 50, n2 = 30, n3 = 3, rho = 0.1, show_network = TRUE)
@@ -409,7 +409,7 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
 
     plot_tbl <- res_tbl %>%
       dplyr::group_by(method, network_type, rho) %>%
-      dplyr::summarize(meanSNMI = mean(SNMI_scores),
+      dplyr::summarise(meanSNMI = mean(SNMI_scores),
                 sdSNMI = sd(SNMI_scores))
 
     if(plot_results) {
@@ -427,7 +427,7 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
 
     plot_tbl <- res_tbl %>%
       dplyr::group_by(method, network_type, rho) %>%
-      dplyr::summarize(meanNMI = mean(NMI_scores),
+      dplyr::summarise(meanNMI = mean(NMI_scores),
                 sdNMI = sd(NMI_scores))
 
     if(plot_results) {
@@ -444,4 +444,4 @@ simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_
   return(res_tbl)
 }
 
-options(dplyr.summarise.inform = TRUE)
+# options(dplyr.summarise.inform = TRUE)
