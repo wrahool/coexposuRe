@@ -1,5 +1,5 @@
 Package: coexposuRe
-Title: Simulates Coexposure Networks
+Title: Coexposure Network Simulation
 Version: 0.0.0.9000
 Authors@R: 
     person("Subhayan", "Mukerjee", , "mail@subhayan.com", role = c("aut", "cre"),
@@ -20,4 +20,5 @@ Imports:
     igraph,
     aricode,
     poweRlaw,
+    fGarch,
     ggplot2
