@@ -98,12 +98,12 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
     }
 
     selective_chosen_outlets <- selective_outlets_pool %>%          # from
-      pull(outlet_id) %>%                                           # all outlets in the selective outlets pool
+      dplyr::pull(outlet_id) %>%                                           # all outlets in the selective outlets pool
       sample(selective_choices_allowed, replace = TRUE,             # randomly sample with prob = outlet repute (R auto-normalizes the probabilities of the subset)
              prob = selective_outlets_pool$outlet_repute)
 
     random_chosen_outlets <- outlets_tbl %>%                        # from
-      pull(outlet_id) %>%                                           # all outlets in the universe
+      dplyr::pull(outlet_id) %>%                                           # all outlets in the universe
       sample(random_choices_allowed, replace = TRUE,                # randomly sample with prob = outlet_repute
              prob = outlets_tbl$outlet_repute)
 
@@ -121,7 +121,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
   }
 
   outlet_reach <- audience_el %>%
-    pull(outlet_name) %>%
+    dplyr::pull(outlet_name) %>%
     table() %>%
     tibble::as_tibble() %>%
     dplyr::rename(uv = n) %>%
@@ -139,7 +139,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
     lapply(FUN = function(x) {
       outlets_tbl %>%
         dplyr::filter(outlet_name == x) %>%
-        pull(outlet_type)
+        dplyr::pull(outlet_type)
     }
     ) %>%
     unlist()
@@ -156,7 +156,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
   for(v in igraph::V(outlet_projection_sl)$name) {
     igraph::E(outlet_projection_sl)[v %--% v]$weight <- outlet_reach %>%
       dplyr::filter(outlet_name == v) %>%
-      pull(uv)
+      dplyr::pull(uv)
   }
 
   if(show_network) {
