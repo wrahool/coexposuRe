@@ -43,7 +43,7 @@ analyze_simulated_networks(
 
 \item{metric}{only applicable if analyze == "cd". Which variant of NMI to use for calculation. Default is "max". Can be "max", "min", "sqrt", "sum", "joint"}
 
-\item{correct}{only applicable if analyze = "cd". If TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.}
+\item{correct}{only applicable if analyze == "cd". If TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.}
 
 \item{plot_results}{if TRUE, a graph of the results is shown.}
 }
@@ -55,7 +55,8 @@ Calls \code{simulate_single_network} with different values of rho and returns th
 Two analyses are currently supported with support for more planned for the future. See the \code{analyze} parameter for details.
 }
 \examples{
-res <- simulate_analyze_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
+res <- analyze_simulated_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5, analyze = "c" )
+res <- analyze_simulated_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5, analyze = "cd" , correct = F)
 }
 \references{
 Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.

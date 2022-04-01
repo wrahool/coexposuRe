@@ -196,11 +196,12 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 #' @param N number of networks to build for each value of rho. Defaults to 100.
 #' @param analyze what analysis to perform? Currently supports two: "cd" for community detection. "c" for centralization.
 #' @param metric only applicable if analyze == "cd". Which variant of NMI to use for calculation. Default is "max". Can be "max", "min", "sqrt", "sum", "joint"
-#' @param correct only applicable if analyze = "cd". If TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.
+#' @param correct only applicable if analyze == "cd". If TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.
 #' @param plot_results if TRUE, a graph of the results is shown.
 #' @return a tibble with the results for each iteration within the simulation
 #' @examples
-#' res <- simulate_analyze_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
+#' res <- analyze_simulated_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5, analyze = "c" )
+#' res <- analyze_simulated_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5, analyze = "cd" , correct = F)
 #' @export
 analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, a = 2, b = 1, N = 100, analyze, metric = "max", correct = T, plot_results = T) {
 
@@ -391,7 +392,6 @@ analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho
     }
 
     res_tbl <- res_tbl %>%
-      dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
       dplyr::mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
       dplyr::mutate(method = gsub("2", "", method)) %>%
       dplyr::mutate(method = ifelse(method == "wt", "Walktrap",
