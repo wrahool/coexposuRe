@@ -182,7 +182,8 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 
 #' Run full simulation
 #'
-#' Calls `simulate_single_network` with different values of rho and returns the results of the simulation
+#' Calls `simulate_single_network` with different values of rho and returns the results of the analysis of those selected networks
+#' Two analyses are currently supported with support for more planned for the future. See the `analyze` parameter for details.
 #' @references Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
 #' @param n1 the number of media outlets in the environment
 #' @param n2 the number of agents in the environment
@@ -193,255 +194,381 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
 #' @param a the exponent of the power-law distribution from which the reputation of the media outlets is drawn. Default is 2.
 #' @param b the skewness parameter that determines how skewed the browsing behavior of the agents is. Can be negative or positive, but not 0. Default is 1.
 #' @param N number of networks to build for each value of rho. Defaults to 100.
-#' @param metric which variant of NMI to use for calculation. Default is "max". Can be "max", "min", "sqrt", "sum", "joint"
-#' @param correct if TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.
+#' @param analyze what analysis to perform? Currently supports two: "cd" for community detection. "c" for centralization.
+#' @param metric only applicable if analyze == "cd". Which variant of NMI to use for calculation. Default is "max". Can be "max", "min", "sqrt", "sum", "joint"
+#' @param correct only applicable if analyze = "cd". If TRUE, NMI scores are scaled using the scaling factor. This corrects for overfitting by community detection algorithms. Default is TRUE.
 #' @param plot_results if TRUE, a graph of the results is shown.
 #' @return a tibble with the results for each iteration within the simulation
 #' @examples
 #' res <- simulate_analyze_networks(n1 = 50, n2 = 30, n3 = 3, rho_min = 0, rho_max = 0.4, N = 5)
 #' @export
-simulate_analyze_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, a = 2, b = 1, N = 100, metric = "max", correct = T, plot_results = T) {
+analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho_inc = 0.1, a = 2, b = 1, N = 100, analyze, metric = "max", correct = T, plot_results = T) {
 
-  res_tbl <- NULL
+  if (analyze == "cd") {
+    res_tbl <- NULL
 
-  for(rho in seq(from = rho_min, to = rho_max, by = rho_inc)) {
-    i <- 1
-    while(i <= N) {
-      message(paste0("rho : ", rho, " iteration : ", i))
+    for(rho in seq(from = rho_min, to = rho_max, by = rho_inc)) {
+      i <- 1
+      while(i <= N) {
+        message(paste0("rho : ", rho, " iteration : ", i))
 
-      sim_res <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
+        sim_res <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
 
-      g <- sim_res$g
-      g_sl <- sim_res$ag
-      o_tbl <- sim_res$outlet_data
+        g <- sim_res$g
+        g_sl <- sim_res$ag
+        o_tbl <- sim_res$outlet_data
 
-      if(length(igraph::V(g)) <= 1) {
-        # message("Rerun...")
-        next
+        if(length(igraph::V(g)) <= 1) {
+          # message("Rerun...")
+          next
+        }
+
+        c_wt <- tryCatch(
+          # cluster_walktrap uses E(g)$weight by default
+          igraph::cluster_walktrap(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_wt2 <- tryCatch(
+          igraph::cluster_walktrap(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_l <- tryCatch(
+          # cluster_louvain uses E(g)$weight by default
+          igraph::cluster_louvain(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_l2 <- tryCatch(
+          # cluster_louvain uses E(g)$weight by default
+          igraph::cluster_louvain(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_fg <- tryCatch(
+          # cluster_fast_greedy uses E(g)$weight by default
+          igraph::cluster_fast_greedy(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_fg2 <- tryCatch(
+          # cluster_fast_greedy uses E(g)$weight by default
+          igraph::cluster_fast_greedy(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_eb <- tryCatch(
+          # cluster edge_betweenness uses E(g)$weight by default
+          igraph::cluster_edge_betweenness(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_eb2 <- tryCatch(
+          # cluster edge_betweenness uses E(g)$weight by default
+          igraph::cluster_edge_betweenness(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_im <- tryCatch(
+          # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
+          igraph::cluster_infomap(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_im2 <- tryCatch(
+          # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
+          igraph::cluster_infomap(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+
+        c_lp <- tryCatch(
+          # label propagation uses weight by default
+          igraph::cluster_label_prop(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_lp2 <- tryCatch(
+          # label propagation uses weight by default
+          igraph::cluster_label_prop(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_le <- tryCatch(
+          # leading eigenvector uses weight by default
+          igraph::cluster_leading_eigen(g, options = list(maxiter=1000000)),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_le2 <- tryCatch(
+          # leading eigenvector uses E(g)$weight by default
+          igraph::cluster_leading_eigen(g_sl, options = list(maxiter=1000000)),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_sl <- tryCatch(
+          # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
+          igraph::cluster_spinglass(g),
+          error = function(e) {
+            return(NA)
+          })
+
+        c_sl2 <- tryCatch(
+          # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
+          igraph::cluster_spinglass(g_sl),
+          error = function(e) {
+            return(NA)
+          })
+
+
+        all_cs <- list(c_wt, c_wt2,
+                       c_l, c_l2,
+                       c_fg, c_fg2,
+                       c_eb, c_eb2,
+                       c_im, c_im2,
+                       c_lp, c_lp2,
+                       c_le, c_le2,
+                       c_sl, c_sl2
+        )
+
+        cd_used <- c(
+          "wt", "wt2",
+          "l", "l2",
+          "fg", "fg2",
+          "eb", "eb2",
+          "im", "im2",
+          "lp", "lp2",
+          "le", "le2",
+          "sl", "sl2"
+        )
+
+        NMI_scores <- sapply(all_cs, FUN = function(x) {
+          get_NMI(x, o_tbl, metric)
+        })
+
+        if(correct) {
+          scaling_factors <- sapply(all_cs, FUN = function(x) {
+            get_scalingfactor(x, o_tbl)
+          })
+
+          res_tbl <- tibble::tibble(
+            run = i,
+            rho = rho,
+            method = cd_used,
+            NMI_scores = NMI_scores,
+            scaling_factors = scaling_factors
+          ) %>%
+            rbind(res_tbl)
+
+        } else {
+
+          res_tbl <- tibble::tibble(
+            run = i,
+            rho = rho,
+            method = cd_used,
+            NMI_scores = NMI_scores
+          ) %>%
+            rbind(res_tbl)
+        }
+
+        i <- i+1
       }
-
-      c_wt <- tryCatch(
-        # cluster_walktrap uses E(g)$weight by default
-        igraph::cluster_walktrap(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_wt2 <- tryCatch(
-        igraph::cluster_walktrap(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_l <- tryCatch(
-        # cluster_louvain uses E(g)$weight by default
-        igraph::cluster_louvain(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_l2 <- tryCatch(
-        # cluster_louvain uses E(g)$weight by default
-        igraph::cluster_louvain(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_fg <- tryCatch(
-        # cluster_fast_greedy uses E(g)$weight by default
-        igraph::cluster_fast_greedy(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_fg2 <- tryCatch(
-        # cluster_fast_greedy uses E(g)$weight by default
-        igraph::cluster_fast_greedy(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_eb <- tryCatch(
-        # cluster edge_betweenness uses E(g)$weight by default
-        igraph::cluster_edge_betweenness(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_eb2 <- tryCatch(
-        # cluster edge_betweenness uses E(g)$weight by default
-        igraph::cluster_edge_betweenness(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_im <- tryCatch(
-        # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
-        igraph::cluster_infomap(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_im2 <- tryCatch(
-        # cluster_infomap needs an argument called e.weights, but uses E(g)$weight by default
-        igraph::cluster_infomap(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-
-      c_lp <- tryCatch(
-        # label propagation uses weight by default
-        igraph::cluster_label_prop(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_lp2 <- tryCatch(
-        # label propagation uses weight by default
-        igraph::cluster_label_prop(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_le <- tryCatch(
-        # leading eigenvector uses weight by default
-        igraph::cluster_leading_eigen(g, options = list(maxiter=1000000)),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_le2 <- tryCatch(
-        # leading eigenvector uses E(g)$weight by default
-        igraph::cluster_leading_eigen(g_sl, options = list(maxiter=1000000)),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_sl <- tryCatch(
-        # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
-        igraph::cluster_spinglass(g),
-        error = function(e) {
-          return(NA)
-        })
-
-      c_sl2 <- tryCatch(
-        # for spinglass, by default weights = NULL and that uses the E(g)$weight attribute
-        igraph::cluster_spinglass(g_sl),
-        error = function(e) {
-          return(NA)
-        })
-
-
-      all_cs <- list(c_wt, c_wt2,
-                     c_l, c_l2,
-                     c_fg, c_fg2,
-                     c_eb, c_eb2,
-                     c_im, c_im2,
-                     c_lp, c_lp2,
-                     c_le, c_le2,
-                     c_sl, c_sl2
-      )
-
-      cd_used <- c(
-        "wt", "wt2",
-        "l", "l2",
-        "fg", "fg2",
-        "eb", "eb2",
-        "im", "im2",
-        "lp", "lp2",
-        "le", "le2",
-        "sl", "sl2"
-      )
-
-      NMI_scores <- sapply(all_cs, FUN = function(x) {
-        get_NMI(x, o_tbl, metric)
-      })
-
-      if(correct) {
-        scaling_factors <- sapply(all_cs, FUN = function(x) {
-          get_scalingfactor(x, o_tbl)
-        })
-
-        res_tbl <- tibble::tibble(
-          run = i,
-          rho = rho,
-          method = cd_used,
-          NMI_scores = NMI_scores,
-          scaling_factors = scaling_factors
-        ) %>%
-          rbind(res_tbl)
-
-      } else {
-
-        res_tbl <- tibble::tibble(
-          run = i,
-          rho = rho,
-          method = cd_used,
-          NMI_scores = NMI_scores
-        ) %>%
-          rbind(res_tbl)
-      }
-
-      i <- i+1
     }
-  }
 
-  res_tbl <- res_tbl %>%
-    dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
-    dplyr::mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
-    dplyr::mutate(method = gsub("2", "", method)) %>%
-    dplyr::mutate(method = ifelse(method == "wt", "Walktrap",
-                           ifelse(method == "l", "Multilevel",
-                                  ifelse(method == "fg", "Fast Greedy",
-                                         ifelse(method == "eb", "Edge Betweenness",
-                                                ifelse(method == "im", "Infomap",
-                                                       ifelse(method == "lp", "Label Propagation",
-                                                              ifelse(method == "le", "Leading Eigenvector",
-                                                                     ifelse(method == "sl", "Spin Glass", "Unknown")))))))))
-
-
-  if(correct) {
-
-    message("Scaling NMI values...")
     res_tbl <- res_tbl %>%
-      dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors)
+      dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors) %>%
+      dplyr::mutate(network_type = ifelse(grepl("2", method), "augmented", "baseline")) %>%
+      dplyr::mutate(method = gsub("2", "", method)) %>%
+      dplyr::mutate(method = ifelse(method == "wt", "Walktrap",
+                             ifelse(method == "l", "Multilevel",
+                                    ifelse(method == "fg", "Fast Greedy",
+                                           ifelse(method == "eb", "Edge Betweenness",
+                                                  ifelse(method == "im", "Infomap",
+                                                         ifelse(method == "lp", "Label Propagation",
+                                                                ifelse(method == "le", "Leading Eigenvector",
+                                                                       ifelse(method == "sl", "Spin Glass", "Unknown")))))))))
 
-    suppressMessages(plot_tbl <- res_tbl %>%
-      dplyr::group_by(method, network_type, rho) %>%
-      dplyr::summarise(meanSNMI = mean(SNMI_scores),
-                sdSNMI = sd(SNMI_scores)))
 
-    if(plot_results) {
+    if(correct) {
 
-      message("Plotting results...")
-      print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
-              ggplot2::geom_line(ggplot2::aes(y = meanSNMI)) +
-              ggplot2::geom_ribbon(ggplot2::aes(ymin = meanSNMI - sdSNMI, ymax = meanSNMI + sdSNMI), alpha = 0.3) +
-              ggplot2::facet_wrap(~method))
+      message("Scaling NMI values...")
+      res_tbl <- res_tbl %>%
+        dplyr::mutate(SNMI_scores = NMI_scores * scaling_factors)
+
+      suppressMessages(plot_tbl <- res_tbl %>%
+        dplyr::group_by(method, network_type, rho) %>%
+        dplyr::summarise(meanSNMI = mean(SNMI_scores),
+                  sdSNMI = sd(SNMI_scores)))
+
+      if(plot_results) {
+
+        message("Plotting results...")
+        print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
+                ggplot2::geom_line(ggplot2::aes(y = meanSNMI)) +
+                ggplot2::labs(y = "scaled NMI") +
+                ggplot2::geom_ribbon(ggplot2::aes(ymin = meanSNMI - sdSNMI, ymax = meanSNMI + sdSNMI), alpha = 0.3) +
+                ggplot2::facet_wrap(~method, nrow = 2))
+      }
+
+    } else {
+
+      message("NMI values not scaled.")
+
+      suppressMessages(plot_tbl <- res_tbl %>%
+        dplyr::group_by(method, network_type, rho) %>%
+        dplyr::summarise(meanNMI = mean(NMI_scores),
+                  sdNMI = sd(NMI_scores)))
+
+      if(plot_results) {
+
+        message("Plotting results...")
+        print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
+                ggplot2::geom_line(ggplot2::aes(y = meanNMI)) +
+                ggplot2::geom_ribbon(ggplot2::aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
+                ggplot2::facet_grid(~method, nrow = 2))
+      }
+
     }
 
-  } else {
-
-    message("NMI values not scaled.")
-
-    suppressMessages(plot_tbl <- res_tbl %>%
-      dplyr::group_by(method, network_type, rho) %>%
-      dplyr::summarise(meanNMI = mean(NMI_scores),
-                sdNMI = sd(NMI_scores)))
-
-    if(plot_results) {
-
-      message("Plotting results...")
-      print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
-              ggplot2::geom_line(ggplot2::aes(y = meanNMI)) +
-              ggplot2::geom_ribbon(ggplot2::aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
-              ggplot2::facet_wrap(~method))
-    }
+    return(res_tbl)
 
   }
 
-  return(res_tbl)
+  if(analyze == "c") {
+
+    res_tbl <- NULL
+
+    for(rho in seq(from = rho_min, to = rho_max, by = rho_inc)) {
+
+      i <- 1
+
+      while(i <= N) {
+        message(paste0("rho : ", rho, " iteration : ", i))
+
+        sim_res <- simulate_single_network(n1, n2, n3, rho = rho, a, b)
+
+        g <- sim_res$g
+        g_sl <- sim_res$ag
+        o_tbl <- sim_res$outlet_data
+
+        if(length(igraph::V(g)) <= 1) {
+          # message("Rerun...")
+          next
+        }
+
+        c_d <- tryCatch(
+          igraph::centr_degree(g, normalized = F)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_d_n <- tryCatch(
+          igraph::centr_degree(g, normalized = T)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_b <- tryCatch(
+          igraph::centr_betw(g, normalized = F)$centralization,
+          error = function(e) {
+            NA
+          })
+
+
+        c_b_n <- tryCatch(
+          igraph::centr_betw(g, normalized = T)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_c <- tryCatch(
+          igraph::centr_clo(g, normalized = F)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_c_n <- tryCatch(
+          igraph::centr_clo(g, normalized = T)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_e <- tryCatch(
+          igraph::centr_eigen(g, normalized = F)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        c_e_n <- tryCatch(
+          igraph::centr_eigen(g, normalized = T)$centralization,
+          error = function(e) {
+            NA
+          })
+
+        res_tbl <- tibble::tibble(
+          run = i,
+          rho = rho,
+          c_deg = c_d,
+          c_deg_norm = c_d_n,
+          c_bet = c_b,
+          c_bet_norm = c_b_n,
+          c_clos = c_c,
+          c_clos_norm = c_c_n,
+          c_eigen = c_e,
+          c_eigen_norm = c_e_n
+        ) %>%
+          rbind(res_tbl)
+
+        i <- i+1
+      }
+    }
+
+    res_tbl <- res_tbl %>%
+      pivot_longer(cols = starts_with("c_"), names_to = "type", values_to = "centralization")
+
+    if(plot_results) {
+      plot_tbl <- res_tbl %>%
+        dplyr::group_by(rho, type) %>%
+        dplyr::summarize(mean_c = mean(centralization, na.rm = T),
+                  sd_c = sd(centralization, na.rm = T)) %>%
+        dplyr::mutate(type = ifelse(type == "c_deg", "Regular degree",
+                             ifelse(type == "c_deg_norm", "Normalized degree",
+                                    ifelse(type == "c_bet", "Regular betweenness",
+                                           ifelse(type == "c_bet_norm", "Normalized betweenness",
+                                                  ifelse(type == "c_clos", "Regular closeness",
+                                                         ifelse(type == "c_clos_norm", "Normalized closeness",
+                                                                ifelse(type == "c_eigen", "Regular eigenvector", "Normalized eigenvector")))))))) %>%
+        tidyr::separate(type, into = c("type1", "type2"), sep = " ")
+
+      print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho)) +
+              ggplot2::geom_line(ggplot2::aes(y = mean_c)) +
+              ggplot2::geom_ribbon(ggplot2::aes(ymin = mean_c - sd_c, ymax = mean_c + sd_c), alpha = 0.3) +
+              ggplot2::labs(y = "centralization") +
+              ggplot2::facet_wrap(type1 ~ type2, scales = "free", nrow = 2) +
+              theme_bw())
+    }
+
+    return(res_tbl)
+  }
 }
+
+
+
+
 
 # options(dplyr.summarise.inform = TRUE)
