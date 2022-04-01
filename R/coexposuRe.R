@@ -440,7 +440,7 @@ analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho
         print(ggplot2::ggplot(data = plot_tbl, ggplot2::aes(x = rho, fill = network_type, color = network_type)) +
                 ggplot2::geom_line(ggplot2::aes(y = meanNMI)) +
                 ggplot2::geom_ribbon(ggplot2::aes(ymin = meanNMI - sdNMI, ymax = meanNMI + sdNMI), alpha = 0.3) +
-                ggplot2::facet_grid(~method, nrow = 2))
+                ggplot2::facet_wrap(~method, nrow = 2))
       }
 
     }
