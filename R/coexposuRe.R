@@ -1,5 +1,3 @@
-
-
 #' Get Simulated Network
 #'
 #' `simulate_single_network()` runs a single simulation and returns coexposure networks and additional information related to those networks. \cr
@@ -180,7 +178,7 @@ simulate_single_network <- function(n1, n2, n3, rho, a = 2, b = 1, show_network 
   return(list("g" = outlet_projection, "ag" = outlet_projection_sl, "outlet_data" = outlets_tbl))
 }
 
-#' Run full simulation
+#' Generate and analyze simulated networks
 #'
 #' Calls `simulate_single_network` with different values of rho and returns the results of the analysis of those selected networks
 #' Two analyses are currently supported with support for more planned for the future. See the `analyze` parameter for details.
@@ -566,8 +564,3 @@ analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho
   }
 }
 
-
-
-
-
-# options(dplyr.summarise.inform = TRUE)
