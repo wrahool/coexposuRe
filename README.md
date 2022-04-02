@@ -1,5 +1,5 @@
 # coexposuRe
-coexposuRe is an R package that helps simulate audience coexposure networks. It allows you to model audience behavior in an artificial media environment by tuning various parameters that mimic certain constraints or affordances of real-world media environments. This in turn provides novel possibilities of testing theories related to audience behavior by formal
+coexposuRe is an R package that helps simulate audience coexposure networks. It allows you to model audience behavior in an artificial media environment by tuning various parameters that mimic certain constraints or affordances of real-world media environments. This in turn provides novel possibilities of testing theories related to audience behavior using formal network theoretic tools.
 
 The ideas underpinning `coexposuRe` are available in this paper:
 
