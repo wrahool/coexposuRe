@@ -11,7 +11,7 @@ The `install_github` function is available in the `devtools` package, which need
 `coexposuRe` provides two main functions:
 
 1. `simulate_single_network`: generates a single co-exposure network by specifying certain parameter values
-2. `analyze_simulated_networks`: generates multiple networks with the same parameters as above, but with different values of the randomizing parameter, and then analylzes them
+2. `analyze_simulated_networks`: generates multiple networks with the same parameters as above, but with different values of the randomizing parameter, and then analyzes them. Currently, two analyses are supported, community detection and centralization.
 
 For details type `?simulate_single_network` and `?analyze_simulated_networks`
 
