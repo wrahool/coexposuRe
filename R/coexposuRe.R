@@ -559,8 +559,7 @@ analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho
               ggplot2::geom_line(ggplot2::aes(y = mean_c)) +
               ggplot2::geom_ribbon(ggplot2::aes(ymin = mean_c - sd_c, ymax = mean_c + sd_c), alpha = 0.3) +
               ggplot2::labs(y = "centralization") +
-              ggplot2::facet_wrap(type1 ~ type2, scales = "free", nrow = 2) +
-              theme_bw())
+              ggplot2::facet_wrap(type1 ~ type2, scales = "free", nrow = 2)
     }
 
     return(res_tbl)
