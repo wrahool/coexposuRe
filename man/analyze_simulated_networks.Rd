@@ -2,7 +2,7 @@
 % Please edit documentation in R/coexposuRe.R
 \name{analyze_simulated_networks}
 \alias{analyze_simulated_networks}
-\title{Run full simulation}
+\title{Generate and analyze simulated networks}
 \usage{
 analyze_simulated_networks(
   n1,
