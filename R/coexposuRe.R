@@ -539,7 +539,7 @@ analyze_simulated_networks <- function(n1, n2, n3, rho_min = 0, rho_max = 1, rho
     }
 
     res_tbl <- res_tbl %>%
-      pivot_longer(cols = starts_with("c_"), names_to = "type", values_to = "centralization")
+      tidyr::pivot_longer(cols = starts_with("c_"), names_to = "type", values_to = "centralization")
 
     if(plot_results) {
       plot_tbl <- res_tbl %>%
