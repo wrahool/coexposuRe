@@ -10,9 +10,9 @@
 #' @param b the skewness parameter that determines how skewed the browsing behavior of the agents is. Can be negative or positive, but not 0. Default is 1.
 #' @param show_network if TRUE, will plot the coexposure network. Default is FALSE.
 #' @param niter used if `show_network` = TRUE. Passed to `plot.igraph` for visualizing network.
-#' @return `simulate_single_network` returns a list with three elements: \cr
-#' * `g` the coexposure network of media outlets \cr
-#' * `ag` the augmented coexposure network \crggplot2::
+#' @return `simulate_single_network` returns a list with three elements:
+#' * `g` the coexposure network of media outlets
+#' * `ag` the augmented coexposure network
 #' * `outlet_dat` a tibble containing the details of the simulated media outlets
 #' @examples
 #' res <- simulate_single_network(n1 = 50, n2 = 30, n3 = 3, rho = 0.1, show_network = TRUE)

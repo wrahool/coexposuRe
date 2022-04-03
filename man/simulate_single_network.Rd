@@ -33,10 +33,10 @@ simulate_single_network(
 \item{niter}{used if \code{show_network} = TRUE. Passed to \code{plot.igraph} for visualizing network.}
 }
 \value{
-\code{simulate_single_network} returns a list with three elements: \cr
+\code{simulate_single_network} returns a list with three elements:
 \itemize{
-\item \code{g} the coexposure network of media outlets \cr
-\item \code{ag} the augmented coexposure network \crggplot2::
+\item \code{g} the coexposure network of media outlets
+\item \code{ag} the augmented coexposure network
 \item \code{outlet_dat} a tibble containing the details of the simulated media outlets
 }
 }
