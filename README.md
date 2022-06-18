@@ -3,7 +3,7 @@ coexposuRe is an R package that helps simulate audience coexposure networks. It 
 
 The ideas underpinning `coexposuRe` are available in this paper:
 
-> Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. Scientific Reports, 11(1), 1-11.
+> Mukerjee, S. (2021). A systematic comparison of community detection algorithms for measuring selective exposure in co-exposure networks. *Scientific Reports*, 11(1), 1-11.
 
 To install `coexposuRe`, run `install_github("wrahool/coexposuRe")` in the R console.
 The `install_github` function is available in the `devtools` package, which needs to be installed by running `install.packages("devtools")` and included using `library(devtools)`.
